@@ -2,9 +2,15 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const nodemailer = require('nodemailer');
+const cors = require('cors');
 const bodyParser = require('body-parser');
 
 const app = express();
+
+// Enable CORS for all origins
+app.use(cors());
+
+// Body parser middleware
 app.use(bodyParser.json());
 
 // MongoDB connection
@@ -41,8 +47,7 @@ const transporter = nodemailer.createTransport({
     pass: process.env.EMAIL_PASS,
   },
 });
-console.log(process.env.EMAIL_USER)
-console.log(process.env.EMAIL_PASS)
+
 // API to register a user
 app.post('/register', async (req, res) => {
   const formData = req.body;
@@ -56,7 +61,7 @@ app.post('/register', async (req, res) => {
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: formData.email,
-      subject: 'Welcome to Web3 Nova Training',
+      subject: 'Welcome to Web3 Nova',
       text: `
         Hello ${formData.fullName},
 
@@ -71,15 +76,10 @@ app.post('/register', async (req, res) => {
       `,
     };
 
-    transporter.sendMail(mailOptions, (error, info) => {
-      if (error) {
-        console.error('Email sending error:', error);
-        return res.status(500).json({ message: 'Failed to send email' });
-      }
-      res.status(200).json({ message: 'User registered and email sent successfully' });
-    });
+    await transporter.sendMail(mailOptions);
+    res.status(200).json({ message: 'User registered and email sent successfully' });
   } catch (error) {
-    console.error('Registration error:', error);
+    console.error('Error:', error);
     res.status(500).json({ message: 'An error occurred while registering the user' });
   }
 });
