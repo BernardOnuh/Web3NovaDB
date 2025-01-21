@@ -41,6 +41,25 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+// New GET endpoint to fetch all registered users
+app.get('/users', async (req, res) => {
+  try {
+    const users = await User.find({});
+    res.status(200).json({
+      success: true,
+      count: users.length,
+      data: users
+    });
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching users',
+      error: error.message
+    });
+  }
+});
+
 app.post('/register', async (req, res) => {
   const formData = req.body;
 
@@ -78,7 +97,7 @@ app.post('/register', async (req, res) => {
     };
 
     await transporter.sendMail(mailOptions);
-    res.status(200).json({ 
+    res.status(200).json({
       message: 'User registered and email sent successfully',
       whatsappLink: 'https://chat.whatsapp.com/CuPv6e9N8Rt7cY6gDU82Qp'
     });
